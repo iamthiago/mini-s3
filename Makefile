@@ -40,6 +40,7 @@ coverage-html: coverage
 
 # Lint all modules
 lint:
+	@which golangci-lint > /dev/null || (echo "golangci-lint not installed. Install with: brew install golangci-lint or go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest" && exit 1)
 	@echo "Linting root module..."
 	golangci-lint run ./...
 	@echo "Linting storage module..."
