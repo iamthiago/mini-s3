@@ -22,7 +22,23 @@ jobs:
         go-version: '1.25'
 
     - name: Build
-      run: go build -v ./...
+      run: make build
+
+    - name: Install golangci-lint
+      run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+    - name: Lint
+      run: make lint
 
     - name: Test
-      run: go test -v ./...
+      run: make test
+
+    - name: Coverage
+      run: make coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.out,./storage/coverage.out
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
