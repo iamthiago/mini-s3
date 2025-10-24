@@ -1,1 +1,13 @@
 .idea
+
+# Coverage files
+coverage.out
+coverage.html
+*.coverprofile
+
+# Build artifacts
+mini-s3
+/storage/storage
+
+# Go workspace file (optional - uncomment if you want to ignore it)
+# go.work
