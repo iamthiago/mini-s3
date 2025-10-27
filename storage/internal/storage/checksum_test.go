@@ -6,10 +6,7 @@ import (
 )
 
 func TestValueChecksum_Generate(t *testing.T) {
-	checksum, err := NewValueChecksum()
-	if err != nil {
-		t.Fatalf("Failed to create a checksum instance: %v", err)
-	}
+	checksum := NewValueChecksum()
 
 	tests := []struct {
 		name     string
@@ -43,10 +40,7 @@ func TestValueChecksum_Generate(t *testing.T) {
 }
 
 func TestValueChecksum_Verify(t *testing.T) {
-	checksum, err := NewValueChecksum()
-	if err != nil {
-		t.Fatalf("Failed to create a checksum instance: %v", err)
-	}
+	checksum := NewValueChecksum()
 
 	tests := []struct {
 		name     string

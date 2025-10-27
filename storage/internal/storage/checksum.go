@@ -14,8 +14,8 @@ type Checksum interface {
 type ValueChecksum struct {
 }
 
-func NewValueChecksum() (*ValueChecksum, error) {
-	return &ValueChecksum{}, nil
+func NewValueChecksum() *ValueChecksum {
+	return &ValueChecksum{}
 }
 
 // Generate computes a SHA-256 hash of the input stream.
