@@ -3,6 +3,7 @@ package storage
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -36,14 +37,14 @@ func (l *LocalStorage) Save(bucket, object string, r io.Reader) (*ObjectInfo, er
 	createdAt := time.Now()
 
 	// Create bucket directory
-	path := l.path + "/" + bucket
-	err := os.MkdirAll(path, os.FileMode(0755))
+	path := filepath.Join(l.path, bucket)
+	err := os.MkdirAll(path, 0755)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create file
-	filePath := path + "/" + object
+	filePath := filepath.Join(path, object)
 	file, err := os.Create(filePath)
 	if err != nil {
 		return nil, err
@@ -52,6 +53,7 @@ func (l *LocalStorage) Save(bucket, object string, r io.Reader) (*ObjectInfo, er
 
 	// Split the stream with a pipe
 	pr, pw := io.Pipe()
+	defer pr.Close()
 
 	// Compute checksum in a goroutine
 	checksumCh := make(chan string, 1)
