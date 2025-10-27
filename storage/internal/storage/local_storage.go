@@ -2,6 +2,8 @@ package storage
 
 import (
 	"io"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -23,15 +25,76 @@ type Storage interface {
 }
 
 type LocalStorage struct {
-	path string
+	path     string
+	checksum Checksum
 }
 
-func NewLocalStorage(path string) (*LocalStorage, error) {
-	return &LocalStorage{path: path}, nil
+func NewLocalStorage(path string, checkSum Checksum) *LocalStorage {
+	return &LocalStorage{path: path, checksum: checkSum}
 }
 
 func (l *LocalStorage) Save(bucket, object string, r io.Reader) (*ObjectInfo, error) {
-	return nil, nil
+	createdAt := time.Now()
+
+	// Create bucket directory
+	path := filepath.Join(l.path, bucket)
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create file
+	filePath := filepath.Join(path, object)
+	file, err := os.Create(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Split the stream with a pipe
+	pr, pw := io.Pipe()
+	defer pr.Close()
+
+	// Compute checksum in a goroutine
+	checksumCh := make(chan string, 1)
+	errCh := make(chan error, 1)
+
+	go func() {
+		checksum, err := l.checksum.Generate(pr)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		checksumCh <- checksum
+	}()
+
+	// Write to file and pipe it
+	teeReader := io.TeeReader(r, pw)
+	size, err := io.Copy(file, teeReader)
+	pw.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Wait for checksum to be computed
+	var checksum string
+	select {
+	case checksum = <-checksumCh:
+	case err := <-errCh:
+		return nil, err
+	}
+
+	newObj := &ObjectInfo{
+		Bucket:    bucket,
+		Object:    object,
+		Size:      size,
+		Checksum:  checksum,
+		CreatedAt: createdAt,
+		Path:      filePath,
+	}
+
+	return newObj, nil
 }
 
 func (l *LocalStorage) Get(bucket, object string) (io.ReadCloser, *ObjectInfo, error) {
