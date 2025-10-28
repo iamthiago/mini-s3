@@ -106,7 +106,15 @@ func (l *LocalStorage) Delete(bucket, object string) error {
 }
 
 func (l *LocalStorage) Exists(bucket, object string) (bool, error) {
-	return false, nil
+	filePath := filepath.Join(l.path, bucket, object)
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func (l *LocalStorage) ListObjects(bucket string) ([]*ObjectInfo, error) {

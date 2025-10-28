@@ -10,7 +10,7 @@ import (
 )
 
 func TestLocalStorage_Save(t *testing.T) {
-	tempDir, err := os.MkdirTemp("", "storage-test")
+	tempDir, err := os.MkdirTemp("", "storage-save-test")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
@@ -155,6 +155,61 @@ func TestLocalStorage_Save(t *testing.T) {
 		_, err := storage.Save("error-bucket", "error-file.txt", errorReader)
 		if err == nil {
 			t.Errorf("Expected error, got nil")
+		}
+	})
+}
+
+func TestLocalStorage_Exists(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "storage-exist-test")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	checksum := NewValueChecksum()
+	storage := NewLocalStorage(tempDir, checksum)
+
+	t.Run("Returns false if file or bucket does not exist", func(t *testing.T) {
+		fileExists, err := storage.Exists("test-bucket", "non-existing-file.txt")
+		if err != nil {
+			t.Fatalf("Failed to check if file exists: %v", err)
+		}
+		if fileExists {
+			t.Errorf("Expected file to not exist")
+		}
+	})
+
+	t.Run("Returns true when file exists in bucket", func(t *testing.T) {
+		_, err := storage.Save("test-bucket", "test-file.txt", strings.NewReader("Hello World!"))
+		if err != nil {
+			t.Fatalf("Failed to save file: %v", err)
+		}
+
+		fileExists, err := storage.Exists("test-bucket", "test-file.txt")
+		if err != nil {
+			t.Fatalf("Failed to check if file exists: %v", err)
+		}
+		if !fileExists {
+			t.Errorf("Expected file to exist")
+		}
+	})
+
+	t.Run("Returns error on stat failure", func(t *testing.T) {
+		restrictedDir := filepath.Join(tempDir, "restricted")
+		err := os.Mkdir(restrictedDir, 0000)
+		if err != nil {
+			t.Skipf("Failed to create restricted directory: %v", err)
+		}
+		defer func() {
+			err := os.Chmod(restrictedDir, 0755)
+			if err != nil {
+				t.Fatalf("Failed to change restricted directory permissions: %v", err)
+			}
+		}()
+
+		_, err = storage.Exists("restricted", "file.txt")
+		if err == nil {
+			t.Errorf("Expected error when accessing restricted directory")
 		}
 	})
 }
