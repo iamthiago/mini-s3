@@ -160,7 +160,7 @@ func TestLocalStorage_Save(t *testing.T) {
 }
 
 func TestLocalStorage_Exists(t *testing.T) {
-	tempDir, err := os.MkdirTemp("", "storage-exist-test")
+	tempDir, err := os.MkdirTemp("", "storage-exists-test")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
