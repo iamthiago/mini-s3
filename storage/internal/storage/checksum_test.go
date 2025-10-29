@@ -65,7 +65,7 @@ func TestValueChecksum_Verify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := strings.NewReader(tt.input)
-			result, err := checksum.Verify(r, tt.expected)
+			result, _, err := checksum.Verify(r, tt.expected)
 			if err != nil {
 				t.Fatalf("Failed to verify checksum: %v", err)
 			}
