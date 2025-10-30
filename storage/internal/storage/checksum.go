@@ -8,7 +8,7 @@ import (
 
 type Checksum interface {
 	Generate(r io.Reader) (string, error)
-	Verify(r io.Reader, expected string) (bool, error)
+	Verify(r io.Reader, expected string) (bool, string, error)
 }
 
 type ValueChecksum struct {
@@ -31,10 +31,11 @@ func (v *ValueChecksum) Generate(r io.Reader) (string, error) {
 
 // Verify reads from r and compares its checksum to the provided expected value.
 // Returns true if the checksums match.
-func (v *ValueChecksum) Verify(r io.Reader, expected string) (bool, error) {
+func (v *ValueChecksum) Verify(r io.Reader, expected string) (bool, string, error) {
 	calculated, err := v.Generate(r)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
-	return calculated == expected, nil
+
+	return calculated == expected, calculated, nil
 }
