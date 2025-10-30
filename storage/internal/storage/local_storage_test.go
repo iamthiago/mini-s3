@@ -2,10 +2,10 @@ package storage
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"testing"
 )
@@ -253,8 +253,45 @@ func TestLocalStorage_Get(t *testing.T) {
 			t.Errorf("Expected error, got nil")
 		}
 
-		if reflect.TypeOf(err) != reflect.TypeOf(&ErrInvalidChecksum{}) {
+		var errInvalidChecksum *ErrInvalidChecksum
+		if !errors.As(err, &errInvalidChecksum) {
 			t.Errorf("Expected ErrInvalidChecksum, got %v", err)
+		}
+
+		if errInvalidChecksum.Got == "" {
+			t.Errorf("Expected Got field to be set")
+		}
+
+		if errInvalidChecksum.Expected != "invalid-checksum" {
+			t.Errorf("Expected Expected field to be 'invalid-checksum', got '%s'", errInvalidChecksum.Expected)
+		}
+
+		// Test Error() method
+		errorMsg := errInvalidChecksum.Error()
+		if errorMsg == "" {
+			t.Errorf("Expected error message to be non-empty")
+		}
+		if !strings.Contains(errorMsg, "invalid checksum") {
+			t.Errorf("Expected error message to contain 'invalid checksum', got '%s'", errorMsg)
+		}
+	})
+
+	t.Run("Returns error when checksum verification fails", func(t *testing.T) {
+		bucket := "test-bucket"
+		fileName := "test-checksum-error.txt"
+
+		_, err := storage.Save(bucket, fileName, strings.NewReader("Hello World!"))
+		if err != nil {
+			t.Fatalf("Failed to save file: %v", err)
+		}
+
+		// Create a storage with error-prone checksum
+		errorChecksum := &errorChecksum{}
+		errorStorage := NewLocalStorage(tempDir, errorChecksum)
+
+		_, _, err = errorStorage.Get(bucket, fileName, "any-checksum")
+		if err == nil {
+			t.Errorf("Expected error, got nil")
 		}
 	})
 
@@ -305,4 +342,15 @@ type errorReader struct {
 
 func (e *errorReader) Read(p []byte) (n int, err error) {
 	return 0, e.err
+}
+
+// errorChecksum is a mock that always return an error
+type errorChecksum struct{}
+
+func (e *errorChecksum) Generate(r io.Reader) (string, error) {
+	return "", errors.New("checksum generation error")
+}
+
+func (e *errorChecksum) Verify(r io.Reader, expected string) (bool, string, error) {
+	return false, "", errors.New("checksum verification error")
 }

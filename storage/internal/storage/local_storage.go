@@ -121,8 +121,8 @@ func (l *LocalStorage) Get(bucket, object string, expectedChecksum string) (io.R
 	if !isValidChecksum {
 		file.Close()
 		return nil, nil, &ErrInvalidChecksum{
-			got:      calculatedChecksum,
-			expected: expectedChecksum,
+			Got:      calculatedChecksum,
+			Expected: expectedChecksum,
 		}
 	}
 
@@ -167,10 +167,10 @@ func (l *LocalStorage) ListObjects(bucket string) ([]*ObjectInfo, error) {
 }
 
 type ErrInvalidChecksum struct {
-	got      string
-	expected string
+	Got      string
+	Expected string
 }
 
 func (e *ErrInvalidChecksum) Error() string {
-	return fmt.Sprintf("invalid checksum: got %s, expected %s", e.got, e.expected)
+	return fmt.Sprintf("invalid checksum: got %s, expected %s", e.Got, e.Expected)
 }
