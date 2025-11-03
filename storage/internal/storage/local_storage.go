@@ -148,12 +148,7 @@ func (l *LocalStorage) Get(bucket, object string, expectedChecksum string) (io.R
 
 func (l *LocalStorage) Delete(bucket, object string) error {
 	filePath := filepath.Join(l.path, bucket, object)
-	err := os.Remove(filePath)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.Remove(filePath)
 }
 
 func (l *LocalStorage) Exists(bucket, object string) (bool, error) {
