@@ -336,6 +336,36 @@ func TestLocalStorage_Get(t *testing.T) {
 	})
 }
 
+func TestLocalStorage_Delete(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "storage-delete-test")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	checksum := NewValueChecksum()
+	storage := NewLocalStorage(tempDir, checksum)
+
+	t.Run("Returns error when file or bucket does not exist", func(t *testing.T) {
+		err := storage.Delete("invalid-bucket", "invalid-file.txt")
+		if err == nil {
+			t.Errorf("Expected error, got nil")
+		}
+	})
+
+	t.Run("Successfully deletes existing file", func(t *testing.T) {
+		info, err := storage.Save("test-bucket", "test-delete-file.txt", strings.NewReader("Hello World!"))
+		if err != nil {
+			t.Fatalf("Failed to save file: %v", err)
+		}
+
+		err = storage.Delete(info.Bucket, info.Object)
+		if err != nil {
+			t.Fatalf("Failed to delete file: %v", err)
+		}
+	})
+}
+
 type errorReader struct {
 	err error
 }
