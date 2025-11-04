@@ -9,13 +9,13 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "List objects in a bucket",
+	Long: `List all objects in the specified bucket.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+This command retrieves and displays a list of objects stored in a bucket.
+
+Example usage:
+  mycli list <bucket-name>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("list called")
 	},
