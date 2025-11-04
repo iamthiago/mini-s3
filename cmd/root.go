@@ -9,13 +9,20 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "mini-s3",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "A minimal S3-compatible object storage server",
+	Long: `mini-s3 is a lightweight, self-hosted object storage server compatible with the Amazon S3 API.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+It allows you to store, retrieve, and manage objects using familiar S3 commands and tools.
+
+Features:
+- S3-compatible API for easy integration with existing tools
+- Local file system backend for object storage
+- Simple configuration and deployment
+
+Example usage:
+  mini-s3 --data-dir /path/to/data
+
+You can use AWS CLI or SDKs to interact with mini-s3 as you would with Amazon S3.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
