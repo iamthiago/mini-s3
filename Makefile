@@ -3,45 +3,34 @@
 # Default target
 all: build test
 
-# Build all modules
+# Build the project
 build:
-	@echo "Building root module..."
+	@echo "Building mini-s3..."
 	go build -v ./...
-	@echo "Building storage module..."
-	cd storage && go build -v ./...
 
-# Test all modules
+# Test all packages
 test:
-	@echo "Testing root module..."
+	@echo "Testing mini-s3..."
 	go test -v ./...
-	@echo "Testing storage module..."
-	cd storage && go test -v ./...
 
 # Clean build artifacts
 clean:
 	go clean
-	cd storage && go clean
-	rm -f coverage.out storage/coverage.out coverage.html storage/coverage.html
+	rm -f coverage.out coverage.html
 
 # Run tests with coverage and generate reports
 coverage:
-	@echo "Running tests with coverage for root module..."
+	@echo "Running tests with coverage..."
 	go test -coverprofile=coverage.out -covermode=atomic ./...
-	@echo "Running tests with coverage for storage module..."
-	cd storage && go test -coverprofile=coverage.out -covermode=atomic ./...
 
-# Generate HTML coverage reports
+# Generate HTML coverage report
 coverage-html: coverage
-	@echo "Generating HTML coverage report for root module..."
+	@echo "Generating HTML coverage report..."
 	go tool cover -html=coverage.out -o coverage.html
-	@echo "Generating HTML coverage report for storage module..."
-	cd storage && go tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage reports generated: coverage.html and storage/coverage.html"
+	@echo "Coverage report generated: coverage.html"
 
-# Lint all modules
+# Lint the project
 lint:
 	@which golangci-lint > /dev/null || (echo "golangci-lint not installed. Install with: brew install golangci-lint or go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest" && exit 1)
-	@echo "Linting root module..."
+	@echo "Linting mini-s3..."
 	golangci-lint run ./...
-	@echo "Linting storage module..."
-	cd storage && golangci-lint run ./...
