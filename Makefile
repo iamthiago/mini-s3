@@ -17,6 +17,7 @@ test:
 clean:
 	go clean
 	rm -f coverage.out coverage.html
+	rm -rf ./data/*
 
 # Run tests with coverage and generate reports
 coverage:

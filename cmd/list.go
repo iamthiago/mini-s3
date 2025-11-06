@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +13,9 @@ var listCmd = &cobra.Command{
 This command retrieves and displays a list of objects stored in a bucket.
 
 Example usage:
-  mycli list <bucket-name>`,
+  mini-s3 list <bucket-name>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
+
 	},
 }
 
