@@ -74,16 +74,11 @@ mini-s3 delete my-bucket documents/report.pdf
 
 ```
 mini-s3/
-├── cmd/                   # CLI commands
-│   ├── root.go            # Root command setup
-│   └── list.go            # List command
+├── cmd/                   # CLI commands and command tests
 ├── internal/
-│   └── storage/           # Core storage implementation
-│       ├── local_storage.go      # Local filesystem storage
-│       ├── local_storage_test.go # Storage tests
-│       ├── checksum.go           # Checksum utilities
-│       └── checksum_test.go      # Checksum tests
-├── go.mod
-├── Makefile
-└── README.md
+│   └── storage/           # Core storage implementation, checksums, and tests
+├── data/                  # Default data directory for local storage
+├── main.go                # Application entry point
+├── Makefile               # Build and development tasks
+└── go.mod                 # Go module dependencies
 ```
