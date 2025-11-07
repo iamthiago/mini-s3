@@ -12,7 +12,7 @@ import (
 var putCmd = &cobra.Command{
 	Use:   "put",
 	Short: "Add objects to a bucket",
-	Long: `Add objects to the specified bucket.:
+	Long: `Add objects to the specified bucket.
 
 Example usage:
   mini-s3 put <bucket-name> <object-name>`,
@@ -45,14 +45,4 @@ Example usage:
 
 func init() {
 	rootCmd.AddCommand(putCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// putCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// putCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

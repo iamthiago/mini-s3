@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/iamthiago/mini-s3/internal/storage"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -24,9 +26,6 @@ Example usage:
   mini-s3 --data-dir /path/to/data
 
 You can use AWS CLI or SDKs to interact with mini-s3 as you would with Amazon S3.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -40,22 +39,57 @@ func Execute() {
 
 var (
 	storageInstance storage.Storage
+	cfgFile         string
+	dataDir         string
 )
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mini-s3.yaml)")
+	rootCmd.PersistentFlags().StringVar(&dataDir, "data-dir", "", "path to data directory")
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mini-s3.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	cobra.OnInitialize(initStorage)
+	cobra.OnInitialize(initConfig, initStorage)
+}
+
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			configPath := filepath.Join(home, ".mini-s3.yaml")
+			viper.AddConfigPath(home)
+			viper.SetConfigType("yaml")
+			viper.SetConfigName(".mini-s3")
+
+			// Create the default config if it doesn't exist
+			if _, err := os.Stat(configPath); os.IsNotExist(err) {
+				createDefaultConfig(configPath)
+			}
+		}
+	}
+
+	viper.AutomaticEnv()
+	viper.ReadInConfig()
+}
+
+func createDefaultConfig(path string) {
+	defaultConfig := `# mini-s3 configuration
+data-dir: ./data
+`
+	os.WriteFile(path, []byte(defaultConfig), 0644)
 }
 
 func initStorage() {
-	storageInstance = storage.NewLocalStorage("./data", storage.NewValueChecksum())
+	// Priority: CLI flag > config file > default
+	rootDir := dataDir
+	if rootDir == "" {
+		rootDir = viper.GetString("data-dir")
+	}
+	if rootDir == "" {
+		rootDir = "./data" // default
+	}
+
+	storageInstance = storage.NewLocalStorage(rootDir, storage.NewValueChecksum())
 }

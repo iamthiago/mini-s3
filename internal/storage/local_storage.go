@@ -164,7 +164,34 @@ func (l *LocalStorage) Exists(bucket, object string) (bool, error) {
 }
 
 func (l *LocalStorage) ListObjects(bucket string) ([]*ObjectInfo, error) {
-	return nil, nil
+	filePath := filepath.Join(l.path, bucket)
+	files, err := os.ReadDir(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var infos []*ObjectInfo
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		filePath := filepath.Join(filePath, file.Name())
+		fileInfo, err := os.Stat(filePath)
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, &ObjectInfo{
+			Bucket:    bucket,
+			Object:    file.Name(),
+			Size:      fileInfo.Size(),
+			Checksum:  "",
+			CreatedAt: fileInfo.ModTime(),
+			Path:      filePath,
+		})
+	}
+
+	return infos, nil
 }
 
 type ErrInvalidChecksum struct {

@@ -366,6 +366,62 @@ func TestLocalStorage_Delete(t *testing.T) {
 	})
 }
 
+func TestLocalStorage_ListObjects(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "storage-list-objects-test")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	checksum := NewValueChecksum()
+	storage := NewLocalStorage(tempDir, checksum)
+
+	t.Run("Returns error when bucket does not exist", func(t *testing.T) {
+		_, err := storage.ListObjects("invalid-bucket")
+		if err == nil {
+			t.Errorf("Expected error, got nil")
+		}
+	})
+
+	t.Run("Returns empty list when bucket is empty", func(t *testing.T) {
+		bucketPath := filepath.Join(tempDir, "empty-bucket")
+		err := os.Mkdir(bucketPath, 0755)
+		if err != nil {
+			t.Fatalf("Failed to create empty bucket: %v", err)
+		}
+
+		objects, err := storage.ListObjects("empty-bucket")
+		if err != nil {
+			t.Fatalf("Failed to list objects: %v", err)
+		}
+		
+		if len(objects) != 0 {
+			t.Errorf("Expected empty list, got %d objects", len(objects))
+		}
+	})
+
+	t.Run("Returns list of objects in bucket", func(t *testing.T) {
+		bucket := "test-bucket"
+		objects := []string{"test-file-1.txt", "test-file-2.txt", "test-file-3.txt"}
+
+		for _, object := range objects {
+			_, err := storage.Save(bucket, object, strings.NewReader("Hello World!"))
+			if err != nil {
+				t.Fatalf("Failed to save file: %v", err)
+			}
+		}
+
+		listedObjects, err := storage.ListObjects(bucket)
+		if err != nil {
+			t.Fatalf("Failed to list objects: %v", err)
+		}
+
+		if len(listedObjects) != len(objects) {
+			t.Errorf("Expected %d objects, got %d", len(objects), len(listedObjects))
+		}
+	})
+}
+
 type errorReader struct {
 	err error
 }
