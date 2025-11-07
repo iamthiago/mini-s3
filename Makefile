@@ -1,4 +1,4 @@
-.PHONY: test build clean all coverage coverage-html lint
+.PHONY: test build clean all coverage coverage-html lint fmt fmt-check
 
 # Default target
 all: build test
@@ -17,6 +17,7 @@ test:
 clean:
 	go clean
 	rm -f coverage.out coverage.html
+	rm -rf ./data/*
 
 # Run tests with coverage and generate reports
 coverage:
@@ -34,3 +35,11 @@ lint:
 	@which golangci-lint > /dev/null || (echo "golangci-lint not installed. Install with: brew install golangci-lint or go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest" && exit 1)
 	@echo "Linting mini-s3..."
 	golangci-lint run ./...
+
+fmt:
+	@echo "Formatting code..."
+	go fmt ./...
+
+fmt-check:
+	@echo "Checking code formatting..."
+	@test -z "$$(gofmt -s -l .)" || (echo "The following files are not formatted:\n$$(gofmt -s -l .)\nRun 'make fmt' to fix" && exit 1)
