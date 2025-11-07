@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -80,6 +81,7 @@ data-dir: ./data
 `
 	err := os.WriteFile(path, []byte(defaultConfig), 0644)
 	if err != nil {
+		fmt.Printf("Failed to create default config: %v\n", err)
 		return
 	}
 }
