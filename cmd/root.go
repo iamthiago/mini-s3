@@ -71,14 +71,17 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv()
-	viper.ReadInConfig()
+	_ = viper.ReadInConfig()
 }
 
 func createDefaultConfig(path string) {
 	defaultConfig := `# mini-s3 configuration
 data-dir: ./data
 `
-	os.WriteFile(path, []byte(defaultConfig), 0644)
+	err := os.WriteFile(path, []byte(defaultConfig), 0644)
+	if err != nil {
+		return
+	}
 }
 
 func initStorage() {

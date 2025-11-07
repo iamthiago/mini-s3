@@ -394,7 +394,7 @@ func TestLocalStorage_ListObjects(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to list objects: %v", err)
 		}
-		
+
 		if len(objects) != 0 {
 			t.Errorf("Expected empty list, got %d objects", len(objects))
 		}

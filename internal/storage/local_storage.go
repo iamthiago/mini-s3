@@ -176,8 +176,8 @@ func (l *LocalStorage) ListObjects(bucket string) ([]*ObjectInfo, error) {
 			continue
 		}
 
-		filePath := filepath.Join(filePath, file.Name())
-		fileInfo, err := os.Stat(filePath)
+		objectPath := filepath.Join(filePath, file.Name())
+		fileInfo, err := os.Stat(objectPath)
 		if err != nil {
 			return nil, err
 		}
