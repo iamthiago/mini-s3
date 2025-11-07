@@ -187,7 +187,7 @@ func (l *LocalStorage) ListObjects(bucket string) ([]*ObjectInfo, error) {
 			Size:      fileInfo.Size(),
 			Checksum:  "",
 			CreatedAt: fileInfo.ModTime(),
-			Path:      filePath,
+			Path:      objectPath,
 		})
 	}
 
