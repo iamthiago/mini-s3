@@ -19,7 +19,7 @@ type ObjectInfo struct {
 
 type Storage interface {
 	Save(bucket, object string, r io.Reader) (*ObjectInfo, error)
-	Get(bucket, object string, expectedChecksum string) (io.ReadCloser, *ObjectInfo, error)
+	Get(bucket, object string) (io.ReadCloser, *ObjectInfo, error)
 	Delete(bucket, object string) error
 	Exists(bucket, object string) (bool, error)
 	ListObjects(bucket string) ([]*ObjectInfo, error)
@@ -98,7 +98,7 @@ func (l *LocalStorage) Save(bucket, object string, r io.Reader) (*ObjectInfo, er
 	return newObj, nil
 }
 
-func (l *LocalStorage) Get(bucket, object string, expectedChecksum string) (io.ReadCloser, *ObjectInfo, error) {
+func (l *LocalStorage) Get(bucket, object string) (io.ReadCloser, *ObjectInfo, error) {
 	filepath := filepath.Join(l.path, bucket, object)
 
 	file, err := os.Open(filepath)
@@ -110,20 +110,6 @@ func (l *LocalStorage) Get(bucket, object string, expectedChecksum string) (io.R
 	if err != nil {
 		file.Close()
 		return nil, nil, err
-	}
-
-	isValidChecksum, calculatedChecksum, err := l.checksum.Verify(file, expectedChecksum)
-	if err != nil {
-		file.Close()
-		return nil, nil, err
-	}
-
-	if !isValidChecksum {
-		file.Close()
-		return nil, nil, &ErrInvalidChecksum{
-			Got:      calculatedChecksum,
-			Expected: expectedChecksum,
-		}
 	}
 
 	// Reset file pointer to the beginning
@@ -138,7 +124,7 @@ func (l *LocalStorage) Get(bucket, object string, expectedChecksum string) (io.R
 		Bucket:    bucket,
 		Object:    object,
 		Size:      info.Size(),
-		Checksum:  calculatedChecksum,
+		Checksum:  "",
 		CreatedAt: info.ModTime(),
 		Path:      filepath,
 	}
