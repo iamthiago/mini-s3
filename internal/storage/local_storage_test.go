@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -368,15 +367,4 @@ type errorReader struct {
 
 func (e *errorReader) Read(p []byte) (n int, err error) {
 	return 0, e.err
-}
-
-// errorChecksum is a mock that always return an error
-type errorChecksum struct{}
-
-func (e *errorChecksum) Generate(r io.Reader) (string, error) {
-	return "", errors.New("checksum generation error")
-}
-
-func (e *errorChecksum) Verify(r io.Reader, expected string) (bool, string, error) {
-	return false, "", errors.New("checksum verification error")
 }

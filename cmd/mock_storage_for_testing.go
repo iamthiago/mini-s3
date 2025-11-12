@@ -9,7 +9,7 @@ import (
 type mockStorageForTesting struct {
 	saveFunc        func(bucket, object string, reader io.Reader) (*storage.ObjectInfo, error)
 	listObjectsFunc func(bucket string) ([]*storage.ObjectInfo, error)
-	getFunc         func(bucket, object string, expectedChecksum string) (io.ReadCloser, *storage.ObjectInfo, error)
+	getFunc         func(bucket, object string) (io.ReadCloser, *storage.ObjectInfo, error)
 	deleteFunc      func(bucket, object string) error
 	existsFunc      func(bucket, object string) (bool, error)
 }
@@ -28,9 +28,9 @@ func (m *mockStorageForTesting) ListObjects(bucket string) ([]*storage.ObjectInf
 	return []*storage.ObjectInfo{}, nil
 }
 
-func (m *mockStorageForTesting) Get(bucket, object string, expectedChecksum string) (io.ReadCloser, *storage.ObjectInfo, error) {
+func (m *mockStorageForTesting) Get(bucket, object string) (io.ReadCloser, *storage.ObjectInfo, error) {
 	if m.getFunc != nil {
-		return m.getFunc(bucket, object, expectedChecksum)
+		return m.getFunc(bucket, object)
 	}
 	return nil, nil, nil
 }
