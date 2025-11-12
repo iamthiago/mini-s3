@@ -51,7 +51,7 @@ func TestGetCommand(t *testing.T) {
 				}
 			},
 			wantErr:        false,
-			expectedOutput: "Successfully saved test.txt to " + tmpDir,
+			expectedOutput: "Successfully saved test.txt to " + destDir,
 			verifyFile:     true,
 		},
 		{
@@ -79,7 +79,33 @@ func TestGetCommand(t *testing.T) {
 				}
 			},
 			wantErr:        false,
-			expectedOutput: "Error getting object: file does not exist",
+			expectedOutput: "Error getting object: nonexistent.txt. file does not exist",
+		},
+		{
+			name: "error when creating the file",
+			args: []string{"test-bucket", "nonexistent.txt", "/nonexistent/dir"},
+			setupStorage: func() *mockStorageForTesting {
+				return &mockStorageForTesting{
+					getFunc: func(bucket, object string) (io.ReadCloser, *storage.ObjectInfo, error) {
+						return nil, nil, os.ErrPermission
+					},
+				}
+			},
+			wantErr:        true,
+			expectedOutput: "Error getting object: nonexistent.txt. permission denied",
+		},
+		{
+			name: "error when writing to the destination file",
+			args: []string{"test-bucket", "nonexistent.txt", destDir},
+			setupStorage: func() *mockStorageForTesting {
+				return &mockStorageForTesting{
+					getFunc: func(bucket, object string) (io.ReadCloser, *storage.ObjectInfo, error) {
+						return &errorReader{}, &storage.ObjectInfo{Object: object}, nil
+					},
+				}
+			},
+			wantErr:        true,
+			expectedOutput: "Error writing to file:",
 		},
 	}
 
@@ -120,4 +146,14 @@ func TestGetCommand(t *testing.T) {
 			}
 		})
 	}
+}
+
+type errorReader struct{}
+
+func (e *errorReader) Read(p []byte) (n int, err error) {
+	return 0, io.ErrUnexpectedEOF
+}
+
+func (e *errorReader) Close() error {
+	return nil
 }

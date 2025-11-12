@@ -29,7 +29,7 @@ Example usage:
 
 		fromBucket, objInfo, err := storageInstance.Get(bucket, object)
 		if err != nil {
-			fmt.Printf("Error getting object: %v\n", err)
+			fmt.Printf("Error getting object: %v. %v\n", object, err)
 			return
 		}
 		defer fromBucket.Close()
@@ -37,13 +37,15 @@ Example usage:
 		path := filepath.Join(outDir, objInfo.Object)
 		outFile, err := os.Create(path)
 		if err != nil {
-			fmt.Printf("Error creating fromBucket: %v\n", err)
+			fmt.Printf("Error creating file: %v\n", err)
+			return
 		}
 		defer outFile.Close()
 
 		_, err = io.Copy(outFile, fromBucket)
 		if err != nil {
 			fmt.Printf("Error writing to file: %v\n", err)
+			return
 		}
 		fmt.Printf("Successfully saved %s to %s\n", objInfo.Object, path)
 	},

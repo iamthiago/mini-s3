@@ -112,14 +112,6 @@ func (l *LocalStorage) Get(bucket, object string) (io.ReadCloser, *ObjectInfo, e
 		return nil, nil, err
 	}
 
-	// Reset file pointer to the beginning
-	// as it was consumed by the checksum verification
-	_, err = file.Seek(0, io.SeekStart)
-	if err != nil {
-		file.Close()
-		return nil, nil, err
-	}
-
 	objInfo := &ObjectInfo{
 		Bucket:    bucket,
 		Object:    object,
