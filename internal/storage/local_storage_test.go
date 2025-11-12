@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -226,7 +225,7 @@ func TestLocalStorage_Get(t *testing.T) {
 	storage := NewLocalStorage(tempDir, checksum)
 
 	t.Run("Returns error when file or bucket does not exist", func(t *testing.T) {
-		_, _, err := storage.Get("invalid-bucket", "invalid-file.txt", "invalid-checksum")
+		_, _, err := storage.Get("invalid-bucket", "invalid-file.txt")
 		if err == nil {
 			t.Errorf("Expected error, got nil")
 		}
@@ -239,75 +238,19 @@ func TestLocalStorage_Get(t *testing.T) {
 		}
 	})
 
-	t.Run("Returns error when checksum does not match", func(t *testing.T) {
-		bucket := "test-bucket"
-		fileName := "test-file.txt"
-
-		_, err := storage.Save(bucket, fileName, strings.NewReader("Hello World!"))
-		if err != nil {
-			t.Fatalf("Failed to save file: %v", err)
-		}
-
-		_, _, err = storage.Get(bucket, fileName, "invalid-checksum")
-		if err == nil {
-			t.Errorf("Expected error, got nil")
-		}
-
-		var errInvalidChecksum *ErrInvalidChecksum
-		if !errors.As(err, &errInvalidChecksum) {
-			t.Errorf("Expected ErrInvalidChecksum, got %v", err)
-		}
-
-		if errInvalidChecksum.Got == "" {
-			t.Errorf("Expected Got field to be set")
-		}
-
-		if errInvalidChecksum.Expected != "invalid-checksum" {
-			t.Errorf("Expected Expected field to be 'invalid-checksum', got '%s'", errInvalidChecksum.Expected)
-		}
-
-		// Test Error() method
-		errorMsg := errInvalidChecksum.Error()
-		if errorMsg == "" {
-			t.Errorf("Expected error message to be non-empty")
-		}
-		if !strings.Contains(errorMsg, "invalid checksum") {
-			t.Errorf("Expected error message to contain 'invalid checksum', got '%s'", errorMsg)
-		}
-	})
-
-	t.Run("Returns error when checksum verification fails", func(t *testing.T) {
-		bucket := "test-bucket"
-		fileName := "test-checksum-error.txt"
-
-		_, err := storage.Save(bucket, fileName, strings.NewReader("Hello World!"))
-		if err != nil {
-			t.Fatalf("Failed to save file: %v", err)
-		}
-
-		// Create a storage with error-prone checksum
-		errorChecksum := &errorChecksum{}
-		errorStorage := NewLocalStorage(tempDir, errorChecksum)
-
-		_, _, err = errorStorage.Get(bucket, fileName, "any-checksum")
-		if err == nil {
-			t.Errorf("Expected error, got nil")
-		}
-	})
-
 	t.Run("Successfully retrieves existing file", func(t *testing.T) {
 		text := "Hello World!"
 		bucket := "test-bucket"
 		fileName := "test-get-file.txt"
 
 		reader := strings.NewReader(text)
-		savedInfo, err := storage.Save(bucket, fileName, reader)
+		_, err := storage.Save(bucket, fileName, reader)
 		if err != nil {
 			t.Fatalf("Failed to save file: %v", err)
 		}
 
 		// Use the checksum from the saved file
-		file, objInfo, err := storage.Get(bucket, fileName, savedInfo.Checksum)
+		file, objInfo, err := storage.Get(bucket, fileName)
 		if err != nil {
 			t.Fatalf("Failed to get file: %v", err)
 		}
@@ -328,10 +271,6 @@ func TestLocalStorage_Get(t *testing.T) {
 
 		if objInfo.Object != fileName {
 			t.Errorf("Expected object name to be %s, got %s", fileName, objInfo.Object)
-		}
-
-		if objInfo.Checksum != savedInfo.Checksum {
-			t.Errorf("Expected checksum to be '%s', got '%s'", savedInfo.Checksum, objInfo.Checksum)
 		}
 	})
 }
@@ -428,15 +367,4 @@ type errorReader struct {
 
 func (e *errorReader) Read(p []byte) (n int, err error) {
 	return 0, e.err
-}
-
-// errorChecksum is a mock that always return an error
-type errorChecksum struct{}
-
-func (e *errorChecksum) Generate(r io.Reader) (string, error) {
-	return "", errors.New("checksum generation error")
-}
-
-func (e *errorChecksum) Verify(r io.Reader, expected string) (bool, string, error) {
-	return false, "", errors.New("checksum verification error")
 }
