@@ -44,10 +44,12 @@ Example usage:
 
 		_, err = io.Copy(outFile, fromBucket)
 		if err != nil {
+			outFile.Close()
+			os.Remove(path)
 			fmt.Printf("Error writing to file: %v\n", err)
 			return
 		}
-		fmt.Printf("Successfully saved %s to %s\n", objInfo.Object, path)
+		fmt.Printf("Successfully saved %s to %s\n", objInfo.Object, outDir)
 	},
 }
 

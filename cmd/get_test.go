@@ -32,7 +32,6 @@ func TestGetCommand(t *testing.T) {
 		name           string
 		args           []string
 		setupStorage   func() *mockStorageForTesting
-		wantErr        bool
 		expectedOutput string
 		verifyFile     bool
 	}{
@@ -50,7 +49,6 @@ func TestGetCommand(t *testing.T) {
 					},
 				}
 			},
-			wantErr:        false,
 			expectedOutput: "Successfully saved test.txt to " + destDir,
 			verifyFile:     true,
 		},
@@ -58,19 +56,17 @@ func TestGetCommand(t *testing.T) {
 			name:           "missing arguments",
 			args:           []string{"test-bucket"},
 			setupStorage:   func() *mockStorageForTesting { return &mockStorageForTesting{} },
-			wantErr:        false,
 			expectedOutput: "Usage: mini-s3 get <bucket-name> <object-name> <output-dir>",
 		},
 		{
 			name:           "no arguments",
 			args:           []string{},
 			setupStorage:   func() *mockStorageForTesting { return &mockStorageForTesting{} },
-			wantErr:        false,
 			expectedOutput: "Usage: mini-s3 get <bucket-name> <object-name> <output-dir>",
 		},
 		{
 			name: "file does not exist",
-			args: []string{"test-bucket", "nonexistent.txt", destDir},
+			args: []string{"test-bucket", "nonexistent1.txt", destDir},
 			setupStorage: func() *mockStorageForTesting {
 				return &mockStorageForTesting{
 					getFunc: func(bucket, object string) (io.ReadCloser, *storage.ObjectInfo, error) {
@@ -78,12 +74,11 @@ func TestGetCommand(t *testing.T) {
 					},
 				}
 			},
-			wantErr:        false,
-			expectedOutput: "Error getting object: nonexistent.txt. file does not exist",
+			expectedOutput: "Error getting object: nonexistent1.txt. file does not exist",
 		},
 		{
 			name: "error when creating the file",
-			args: []string{"test-bucket", "nonexistent.txt", "/nonexistent/dir"},
+			args: []string{"test-bucket", "nonexistent2.txt", "/nonexistent/dir"},
 			setupStorage: func() *mockStorageForTesting {
 				return &mockStorageForTesting{
 					getFunc: func(bucket, object string) (io.ReadCloser, *storage.ObjectInfo, error) {
@@ -91,12 +86,11 @@ func TestGetCommand(t *testing.T) {
 					},
 				}
 			},
-			wantErr:        true,
-			expectedOutput: "Error getting object: nonexistent.txt. permission denied",
+			expectedOutput: "Error getting object: nonexistent2.txt. permission denied",
 		},
 		{
 			name: "error when writing to the destination file",
-			args: []string{"test-bucket", "nonexistent.txt", destDir},
+			args: []string{"test-bucket", "nonexistent3.txt", destDir},
 			setupStorage: func() *mockStorageForTesting {
 				return &mockStorageForTesting{
 					getFunc: func(bucket, object string) (io.ReadCloser, *storage.ObjectInfo, error) {
@@ -104,8 +98,7 @@ func TestGetCommand(t *testing.T) {
 					},
 				}
 			},
-			wantErr:        true,
-			expectedOutput: "Error writing to file:",
+			expectedOutput: "Error writing to file: unexpected EOF",
 		},
 	}
 
